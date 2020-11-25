@@ -64,6 +64,10 @@ public boolean identifierInRange(Identifier idf, Identifier left, Identifier rig
 {
   return idf.getIndex()>left.getIndex() && idf.getIndex()<right.getIndex();
 }
+public  Identifier createIdentifier(int index)
+{
+  return new IdentifierCircle(getNetwork().getNbits()).getIdentifierAt(index);
+}
   /**
    * Return the closest finger preceding the  {@code id}
    *
@@ -142,9 +146,18 @@ public boolean identifierInRange(Identifier idf, Identifier left, Identifier rig
    * @param nprime Arbitrary {@link ChordNode} that is part of the network.
    */
   private void initFingerTable(ChordNode nprime) {
-    /* TODO: Implementation required. */
-    this.fingerTable.setNode(1, nprime.findSuccessor(this, new IdentifierCircle(getNetwork().getNbits()).getIdentifierAt(finger().start(1))));
-    throw new RuntimeException("This method has not been implemented!");
+    /* TODO: DONE Implementation required. */
+    this.fingerTable.setNode(1, nprime.findSuccessor(this, createIdentifier(fingerTable.start(1))));
+    this.setPredecessor(this.successor().predecessor());
+    successor().setPredecessor(this);
+    for(int i = 1; i < getNetwork().getNbits(); i++)
+    {
+      if(identifierInRange(createIdentifier(fingerTable.start(i+1)), id(), fingerTable.node(i).get().id()))
+        fingerTable.setNode(i+1, fingerTable.node(i).get());
+      else
+        fingerTable.setNode(i+1, nprime.findSuccessor(this, createIdentifier(fingerTable.start(i+1))));
+    }
+    //throw new RuntimeException("This method has not been implemented!");
   }
 
   /**
@@ -153,8 +166,13 @@ public boolean identifierInRange(Identifier idf, Identifier left, Identifier rig
    * Defined in [1], Figure 6
    */
   private void updateOthers() {
-    /* TODO: Implementation required. */
-    throw new RuntimeException("This method has not been implemented!");
+    /* TODO: DONE Implementation required. */
+    for(int i=0;i<=getNetwork().getNbits(); i++)
+    {
+      ChordNode predecesor = findPredecessor(this, createIdentifier ((int)(id().getIndex()-java.lang.Math.pow(2, i-1 ))));
+      predecesor.updateFingerTable(this,i);
+    }
+    //throw new RuntimeException("This method has not been implemented!");
   }
 
   /**
@@ -169,7 +187,13 @@ public boolean identifierInRange(Identifier idf, Identifier left, Identifier rig
   public void updateFingerTable(ChordNode s, int i) {
     finger().node(i).ifPresent(node -> {
       /* TODO: Implementation required. */
-      throw new RuntimeException("This method has not been implemented!");
+      if(identifierInRange(s.id(), this.id(), node.id()))
+      {
+          fingerTable.setNode(i, s);
+          ChordNode p=predecessor();
+          p.updateFingerTable(s, i);
+      }
+      //throw new RuntimeException("This method has not been implemented!");
     });
   }
 
