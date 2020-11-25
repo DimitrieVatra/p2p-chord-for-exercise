@@ -3,7 +3,9 @@ package ch.unibas.dmi.dbis.fds.p2p.chord.impl;
 import ch.unibas.dmi.dbis.fds.p2p.chord.api.*;
 import ch.unibas.dmi.dbis.fds.p2p.chord.api.ChordNetwork;
 import ch.unibas.dmi.dbis.fds.p2p.chord.api.data.Identifier;
+import ch.unibas.dmi.dbis.fds.p2p.chord.api.data.IdentifierCircle;
 
+import java.util.Optional;
 import java.util.Set;
 
 import static ch.unibas.dmi.dbis.fds.p2p.chord.api.data.IdentifierCircularInterval.createOpen;
@@ -74,9 +76,9 @@ public boolean identifierInRange(Identifier idf, Identifier left, Identifier rig
   @Override
   public ChordNode closestPrecedingFinger(ChordNode caller, Identifier id) {
     /* TODO: Implementation required. */
-    for(int i = ChordNetwork.getNbits(); i>0; i--)
+    for(int i = this.getNetwork().getNbits(); i>0; i--)
     {
-      ChordNode fingerinode = caller.finger().node(i);
+      ChordNode fingerinode = caller.finger().node(i).get();
       if(identifierInRange(fingerinode.getIdentifier(), caller.getIdentifier(), id))
         return fingerinode;
     }
@@ -102,7 +104,7 @@ public boolean identifierInRange(Identifier idf, Identifier left, Identifier rig
       updateOthers();
       /* TODO: DONE MAYBE Move keys. */
       Set<String> nprimekeys = nprime.keys();
-      nprimekeys.forEach((k) => { this.store(this, k, nprime.lookup(nprime, k)); nprime.delete(nprime, k); });
+      nprimekeys.forEach((k) -> { this.store(this, k, nprime.lookup(nprime, k).get()); nprime.delete(nprime, k); });
     } else {
       for (int i = 1; i <= getNetwork().getNbits(); i++) {
         this.fingerTable.setNode(i, this);
@@ -141,7 +143,7 @@ public boolean identifierInRange(Identifier idf, Identifier left, Identifier rig
    */
   private void initFingerTable(ChordNode nprime) {
     /* TODO: Implementation required. */
-    this.fingerTable.setNode(1, nprime.findSuccessor(this, ))
+    this.fingerTable.setNode(1, nprime.findSuccessor(this, new IdentifierCircle(getNetwork().getNbits()).getIdentifierAt(finger().start(1))));
     throw new RuntimeException("This method has not been implemented!");
   }
 
