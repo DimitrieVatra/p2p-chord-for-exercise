@@ -4,6 +4,8 @@ import ch.unibas.dmi.dbis.fds.p2p.chord.api.*;
 import ch.unibas.dmi.dbis.fds.p2p.chord.api.ChordNetwork;
 import ch.unibas.dmi.dbis.fds.p2p.chord.api.data.Identifier;
 import ch.unibas.dmi.dbis.fds.p2p.chord.api.data.IdentifierCircle;
+import ch.unibas.dmi.dbis.fds.p2p.chord.api.data.IdentifierCircularInterval;
+import jdk.jshell.spi.ExecutionControl;
 
 import java.util.Optional;
 import java.util.Set;
@@ -55,15 +57,11 @@ public class ChordPeer extends AbstractChordPeer {
   public ChordNode findPredecessor(ChordNode caller, Identifier id) {
     /* TODO: DONE Implementation required. */
     ChordNode np = caller;
-    while(identifierInRange(id, np.id(), np.successor().id()))
+    while(!IdentifierCircularInterval.createLeftOpen(np.id(),np.successor().id()).contains(id))
       np = closestPrecedingFinger(np, id);
     return np;
     //throw new RuntimeException("This method has not been implemented!");
   }
-public boolean identifierInRange(Identifier idf, Identifier left, Identifier right)
-{
-  return idf.getIndex()>left.getIndex() && idf.getIndex()<right.getIndex();
-}
 public  Identifier createIdentifier(int index)
 {
   return new IdentifierCircle(getNetwork().getNbits()).getIdentifierAt(index);
@@ -83,7 +81,7 @@ public  Identifier createIdentifier(int index)
     for(int i = this.getNetwork().getNbits(); i>0; i--)
     {
       ChordNode fingerinode = caller.finger().node(i).get();
-      if(identifierInRange(fingerinode.getIdentifier(), caller.getIdentifier(), id))
+      if(IdentifierCircularInterval.createLeftOpen(caller.getIdentifier(),id).contains(fingerinode.getIdentifier()))
         return fingerinode;
     }
     return this;
@@ -152,7 +150,7 @@ public  Identifier createIdentifier(int index)
     successor().setPredecessor(this);
     for(int i = 1; i < getNetwork().getNbits(); i++)
     {
-      if(identifierInRange(createIdentifier(fingerTable.start(i+1)), id(), fingerTable.node(i).get().id()))
+      if(IdentifierCircularInterval.createLeftOpen(id(), fingerTable.node(i).get().id()).contains(createIdentifier(fingerTable.start(i+1))))
         fingerTable.setNode(i+1, fingerTable.node(i).get());
       else
         fingerTable.setNode(i+1, nprime.findSuccessor(this, createIdentifier(fingerTable.start(i+1))));
@@ -186,8 +184,8 @@ public  Identifier createIdentifier(int index)
   @Override
   public void updateFingerTable(ChordNode s, int i) {
     finger().node(i).ifPresent(node -> {
-      /* TODO: Implementation required. */
-      if(identifierInRange(s.id(), this.id(), node.id()))
+      /* TODO: DONE Implementation required. */
+      if(!IdentifierCircularInterval.createLeftOpen(id(), node.id()).contains(s.id()))
       {
           fingerTable.setNode(i, s);
           ChordNode p=predecessor();
@@ -274,6 +272,7 @@ public  Identifier createIdentifier(int index)
   @Override
   protected ChordNode lookupNodeForItem(String key) {
     /* TODO: Implementation required. Hint: Null check on predecessor! */
+
     throw new RuntimeException("This method has not been implemented!");
   }
 
