@@ -81,7 +81,7 @@ public  Identifier createIdentifier(int index)
     for(int i = this.getNetwork().getNbits(); i>0; i--)
     {
       ChordNode fingerinode = caller.finger().node(i).get();
-      if(IdentifierCircularInterval.createLeftOpen(caller.getIdentifier(),id).contains(fingerinode.getIdentifier()))
+      if(IdentifierCircularInterval.createOpen(caller.getIdentifier(),id).contains(fingerinode.getIdentifier()))
         return fingerinode;
     }
     return this;
@@ -104,7 +104,7 @@ public  Identifier createIdentifier(int index)
     if (nprime != null) {
       initFingerTable(nprime);
       updateOthers();
-      /* TODO: DONE MAYBE Move keys. */
+      /* TODO: THIS IS WRONG I HAVE TO CHANGE!!!! Move keys. */
       Set<String> nprimekeys = nprime.keys();
       nprimekeys.forEach((k) -> { this.store(this, k, nprime.lookup(nprime, k).get()); nprime.delete(nprime, k); });
     } else {
@@ -150,7 +150,7 @@ public  Identifier createIdentifier(int index)
     successor().setPredecessor(this);
     for(int i = 1; i < getNetwork().getNbits(); i++)
     {
-      if(IdentifierCircularInterval.createLeftOpen(id(), fingerTable.node(i).get().id()).contains(createIdentifier(fingerTable.start(i+1))))
+      if(IdentifierCircularInterval.createRightOpen(id(), fingerTable.node(i).get().id()).contains(createIdentifier(fingerTable.start(i+1))))
         fingerTable.setNode(i+1, fingerTable.node(i).get());
       else
         fingerTable.setNode(i+1, nprime.findSuccessor(this, createIdentifier(fingerTable.start(i+1))));
@@ -185,7 +185,7 @@ public  Identifier createIdentifier(int index)
   public void updateFingerTable(ChordNode s, int i) {
     finger().node(i).ifPresent(node -> {
       /* TODO: DONE Implementation required. */
-      if(!IdentifierCircularInterval.createLeftOpen(id(), node.id()).contains(s.id()))
+      if(IdentifierCircularInterval.createRightOpen(id(), node.id()).contains(s.id()))
       {
           fingerTable.setNode(i, s);
           ChordNode p=predecessor();
