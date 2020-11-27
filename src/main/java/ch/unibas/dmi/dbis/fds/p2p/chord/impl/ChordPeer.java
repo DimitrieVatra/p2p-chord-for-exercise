@@ -5,9 +5,11 @@ import ch.unibas.dmi.dbis.fds.p2p.chord.api.ChordNetwork;
 import ch.unibas.dmi.dbis.fds.p2p.chord.api.data.Identifier;
 import ch.unibas.dmi.dbis.fds.p2p.chord.api.data.IdentifierCircle;
 import ch.unibas.dmi.dbis.fds.p2p.chord.api.data.IdentifierCircularInterval;
+import ch.unibas.dmi.dbis.fds.p2p.chord.api.math.HashFunction;
 import jdk.jshell.spi.ExecutionControl;
 
 import java.util.Optional;
+import java.util.Random;
 import java.util.Set;
 
 import static ch.unibas.dmi.dbis.fds.p2p.chord.api.data.IdentifierCircularInterval.createOpen;
@@ -56,7 +58,7 @@ public class ChordPeer extends AbstractChordPeer {
   @Override
   public ChordNode findPredecessor(ChordNode caller, Identifier id) {
     /* TODO: DONE Implementation required. */
-    ChordNode np = caller;
+    ChordNode np = this;
     while(!IdentifierCircularInterval.createLeftOpen(np.id(),np.successor().id()).contains(id))
       np = closestPrecedingFinger(np, id);
     return np;
@@ -87,7 +89,6 @@ public  Identifier createIdentifier(int index)
     return this;
     //throw new RuntimeException("This method has not been implemented!");
   }
-
   /**
    * Called on this {@link ChordNode} if it wishes to join the {@link ChordNetwork}. {@code nprime} references another {@link ChordNode}
    * that is already member of the {@link ChordNetwork}.
@@ -105,8 +106,9 @@ public  Identifier createIdentifier(int index)
       initFingerTable(nprime);
       updateOthers();
       /* TODO: THIS IS WRONG I HAVE TO CHANGE!!!! Move keys. */
-      Set<String> nprimekeys = nprime.keys();
-      nprimekeys.forEach((k) -> { this.store(this, k, nprime.lookup(nprime, k).get()); nprime.delete(nprime, k); });
+      Set<String> succkeys = successor().finger().node(1).get().keys();
+      HashFunction hashFunction = new HashFunction(getNetwork().getNbits());
+      succkeys.forEach((k) -> { if(createIdentifier(hashFunction.hash(k)).compareTo(id())<0) this.store(this, k, nprime.lookup(nprime, k).get()); nprime.delete(nprime, k); });
     } else {
       for (int i = 1; i <= getNetwork().getNbits(); i++) {
         this.fingerTable.setNode(i, this);
@@ -146,8 +148,8 @@ public  Identifier createIdentifier(int index)
   private void initFingerTable(ChordNode nprime) {
     /* TODO: DONE Implementation required. */
     this.fingerTable.setNode(1, nprime.findSuccessor(this, createIdentifier(fingerTable.start(1))));
-    this.setPredecessor(this.successor().predecessor());
-    successor().setPredecessor(this);
+    this.setPredecessor(this.finger().node(1).get().predecessor());
+    this.finger().node(1).get().setPredecessor(this);
     for(int i = 1; i < getNetwork().getNbits(); i++)
     {
       if(IdentifierCircularInterval.createRightOpen(id(), fingerTable.node(i).get().id()).contains(createIdentifier(fingerTable.start(i+1))))
@@ -165,14 +167,16 @@ public  Identifier createIdentifier(int index)
    */
   private void updateOthers() {
     /* TODO: DONE Implementation required. */
-    for(int i=0;i<=getNetwork().getNbits(); i++)
+    //setPredecessor(findPredecessor(this,id()));
+
+    for(int i=1;i<=getNetwork().getNbits(); i++)
     {
-      ChordNode predecesor = findPredecessor(this, createIdentifier ((int)(id().getIndex()-java.lang.Math.pow(2, i-1 ))));
+      ChordNode predecesor = findPredecessor(this, createIdentifier ((int)(id().getIndex()-java.lang.Math.pow(2, i-1 ))));// finger().node(i).get();
       predecesor.updateFingerTable(this,i);
     }
     //throw new RuntimeException("This method has not been implemented!");
   }
-
+int oneBased(int zerobased){return zerobased+1;}
   /**
    * If node {@code s} is the i-th finger of this node, update this node's finger table with {@code s}
    *
@@ -185,7 +189,7 @@ public  Identifier createIdentifier(int index)
   public void updateFingerTable(ChordNode s, int i) {
     finger().node(i).ifPresent(node -> {
       /* TODO: DONE Implementation required. */
-      if(IdentifierCircularInterval.createRightOpen(id(), node.id()).contains(s.id()))
+      if(IdentifierCircularInterval.createRightOpen( createIdentifier(id().getIndex()-(int)Math.pow(2,i-1)), finger().node(i).get().id()).contains(s.id()))
       {
           fingerTable.setNode(i, s);
           ChordNode p=predecessor();
@@ -207,8 +211,12 @@ public  Identifier createIdentifier(int index)
   public void notify(ChordNode nprime) {
     if (this.status() == NodeStatus.OFFLINE || this.status() == NodeStatus.JOINING) return;
 
-    /* TODO: Implementation required. Hint: Null check on predecessor! */
-    throw new RuntimeException("This method has not been implemented!");
+    /* TODO: DONE Implementation required. Hint: Null check on predecessor! */
+    if(predecessor()==null || IdentifierCircularInterval.createOpen(predecessor().id(), id()).contains(nprime.id()))
+    {
+      setPredecessor(nprime);
+    }
+    //throw new RuntimeException("This method has not been implemented!");
 
   }
 
@@ -221,8 +229,10 @@ public  Identifier createIdentifier(int index)
   public void fixFingers() {
     if (this.status() == NodeStatus.OFFLINE || this.status() == NodeStatus.JOINING) return;
 
-    /* TODO: Implementation required */
-    throw new RuntimeException("This method has not been implemented!");
+    /* TODO: DONE Implementation required */
+    int i = new Random().nextInt()%finger().size()+1;
+    fingerTable.setNode(i, findSuccessor(this, createIdentifier(finger().start(i))));
+    //throw new RuntimeException("This method has not been implemented!");
   }
 
   /**
@@ -235,8 +245,14 @@ public  Identifier createIdentifier(int index)
   public void stabilize() {
     if (this.status() == NodeStatus.OFFLINE || this.status() == NodeStatus.JOINING) return;
 
-    /* TODO: Implementation required.*/
-    throw new RuntimeException("This method has not been implemented!");
+    /* TODO: DONE Implementation required.*/
+    ChordNode x=successor().predecessor();
+    if(IdentifierCircularInterval.createOpen(id(), successor().id()).contains(x.id()))
+    {
+      fingerTable.setNode(1, x);
+    }
+    successor().notify(this);
+    //throw new RuntimeException("This method has not been implemented!");
   }
 
   /**
@@ -272,8 +288,9 @@ public  Identifier createIdentifier(int index)
   @Override
   protected ChordNode lookupNodeForItem(String key) {
     /* TODO: Implementation required. Hint: Null check on predecessor! */
-
-    throw new RuntimeException("This method has not been implemented!");
+    HashFunction hashFunction = new HashFunction(getNetwork().getNbits());
+    return findSuccessor(this,createIdentifier(hashFunction.hash(key)));
+    //throw new RuntimeException("This method has not been implemented!");
   }
 
   @Override
