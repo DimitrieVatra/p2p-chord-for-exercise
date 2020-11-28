@@ -148,8 +148,8 @@ public  Identifier createIdentifier(int index)
   private void initFingerTable(ChordNode nprime) {
     /* TODO: DONE Implementation required. */
     this.fingerTable.setNode(1, nprime.findSuccessor(this, createIdentifier(fingerTable.start(1))));
-    this.setPredecessor(this.finger().node(1).get().predecessor());
-    this.finger().node(1).get().setPredecessor(this);
+    this.setPredecessor(successor().predecessor());
+    successor().setPredecessor(this);
     for(int i = 1; i < getNetwork().getNbits(); i++)
     {
       if(IdentifierCircularInterval.createRightOpen(id(), fingerTable.node(i).get().id()).contains(createIdentifier(fingerTable.start(i+1))))
@@ -171,12 +171,11 @@ public  Identifier createIdentifier(int index)
 
     for(int i=1;i<=getNetwork().getNbits(); i++)
     {
-      ChordNode predecesor = findPredecessor(this, createIdentifier ((int)(id().getIndex()-java.lang.Math.pow(2, i-1 ))));// finger().node(i).get();
+      ChordNode predecesor = findPredecessor(this, createIdentifier ((int)(id().getIndex()+1-java.lang.Math.pow(2, i-1 ))));// finger().node(i).get();
       predecesor.updateFingerTable(this,i);
     }
     //throw new RuntimeException("This method has not been implemented!");
   }
-int oneBased(int zerobased){return zerobased+1;}
   /**
    * If node {@code s} is the i-th finger of this node, update this node's finger table with {@code s}
    *
@@ -189,7 +188,7 @@ int oneBased(int zerobased){return zerobased+1;}
   public void updateFingerTable(ChordNode s, int i) {
     finger().node(i).ifPresent(node -> {
       /* TODO: DONE Implementation required. */
-      if(IdentifierCircularInterval.createRightOpen( createIdentifier(id().getIndex()-(int)Math.pow(2,i-1)), finger().node(i).get().id()).contains(s.id()))
+      if(IdentifierCircularInterval.createOpen(createIdentifier(id().getIndex()/*+(int)Math.pow(2,i-1)*/), finger().node(i).get().id()).contains(s.id()))//
       {
           fingerTable.setNode(i, s);
           ChordNode p=predecessor();

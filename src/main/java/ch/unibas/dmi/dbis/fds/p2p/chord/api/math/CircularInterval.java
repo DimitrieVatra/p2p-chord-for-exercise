@@ -1,6 +1,8 @@
 package ch.unibas.dmi.dbis.fds.p2p.chord.api.math;
 //TODO Check documentation
 
+import ch.unibas.dmi.dbis.fds.p2p.chord.api.data.IdentifierCircle;
+
 /**
  * Represents a mathematical interval on the identifier countableFiniteSet.
  *
