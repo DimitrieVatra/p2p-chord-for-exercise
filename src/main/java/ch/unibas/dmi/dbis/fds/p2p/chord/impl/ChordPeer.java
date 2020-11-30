@@ -105,7 +105,7 @@ public  Identifier createIdentifier(int index)
     if (nprime != null) {
       initFingerTable(nprime);
       updateOthers();
-      /* TODO: THIS IS WRONG I HAVE TO CHANGE!!!! Move keys. */
+      /* TODO: Move keys. */
       getKeys();
     } else {
       for (int i = 1; i <= getNetwork().getNbits(); i++) {
