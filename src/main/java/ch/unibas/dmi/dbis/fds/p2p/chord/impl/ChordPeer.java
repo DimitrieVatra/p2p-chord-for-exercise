@@ -106,14 +106,7 @@ public  Identifier createIdentifier(int index)
       initFingerTable(nprime);
       updateOthers();
       /* TODO: THIS IS WRONG I HAVE TO CHANGE!!!! Move keys. */
-      Set<String> succkeys = successor().keys();
-      HashFunction hashFunction = new HashFunction(getNetwork().getNbits());
-      for (String k :
-              succkeys) {
-        if(IdentifierCircularInterval.createLeftOpen(successor().id(), id()).contains(createIdentifier(hashFunction.hash(k))))
-          this.store(this, k, successor().forceDelete(findSuccessor(this,createIdentifier(0)), k).get());
-
-      }
+      getKeys();
     } else {
       for (int i = 1; i <= getNetwork().getNbits(); i++) {
         this.fingerTable.setNode(i, this);
@@ -121,7 +114,17 @@ public  Identifier createIdentifier(int index)
       this.setPredecessor(this);
     }
   }
+public void getKeys()
+{
+  Set<String> succkeys = successor().keys();
+  HashFunction hashFunction = new HashFunction(getNetwork().getNbits());
+  for (String k :
+          succkeys) {
+    if(IdentifierCircularInterval.createLeftOpen(successor().id(), id()).contains(createIdentifier(hashFunction.hash(k))))
+      this.store(this, k, successor().forceDelete(findSuccessor(this,createIdentifier(0)), k).get());
 
+  }
+}
   /**
    * Called on this {@link ChordNode} if it wishes to join the {@link ChordNetwork}. {@code nprime} references
    * another {@link ChordNode} that is already member of the {@link ChordNetwork}.
@@ -226,6 +229,7 @@ public  Identifier createIdentifier(int index)
     if(predecessor()==null || IdentifierCircularInterval.createOpen(predecessor().id(), id()).contains(nprime.id()))
     {
       setPredecessor(nprime);
+      getKeys();
     }
     //throw new RuntimeException("This method has not been implemented!");dwadwadwa
 
