@@ -243,8 +243,12 @@ public  Identifier createIdentifier(int index)
   @Override
   public void stabilize() {
     if (this.status() == NodeStatus.OFFLINE || this.status() == NodeStatus.JOINING) return;
-
     /* TODO: DONE Implementation required.*/
+    if(successor() == null) {
+      ChordNode newSuccessor = fingerTable.node(2).get();
+      fingerTable.setNode(1, newSuccessor);
+      notify(fingerTable.node(1).get());
+    }
     ChordNode x=successor().predecessor();
     if(IdentifierCircularInterval.createOpen(id(), successor().id()).contains(x.id()))
     {
@@ -264,6 +268,8 @@ public  Identifier createIdentifier(int index)
     if (this.status() == NodeStatus.OFFLINE || this.status() == NodeStatus.JOINING) return;
 
     /* TODO: Implementation required. Hint: Null check on predecessor! */
+    if(this.predecessor().status() == NodeStatus.OFFLINE)
+      this.setPredecessor(null);
     throw new RuntimeException("This method has not been implemented!");
   }
 
@@ -276,7 +282,9 @@ public  Identifier createIdentifier(int index)
   public void checkSuccessor() {
     if (this.status() == NodeStatus.OFFLINE || this.status() == NodeStatus.JOINING) return;
     /* TODO: Implementation required. Hint: Null check on predecessor! */
-    throw new RuntimeException("This method has not been implemented!");
+    if(this.successor().status() == NodeStatus.OFFLINE)
+      this.fingerTable.setNode(1, null);
+    //throw new RuntimeException("This method has not been implemented!");
   }
 
   /**
