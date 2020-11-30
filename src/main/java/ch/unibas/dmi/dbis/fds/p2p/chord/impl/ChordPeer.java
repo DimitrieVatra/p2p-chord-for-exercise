@@ -141,6 +141,13 @@ public  Identifier createIdentifier(int index)
     } else {
       this.fingerTable.setNode(1, nprime.findSuccessor(this,this));
     }
+    for(int i = 1; i < getNetwork().getNbits(); i++)
+    {
+      if(IdentifierCircularInterval.createRightOpen(id(), fingerTable.node(i).get().id()).contains(createIdentifier(fingerTable.start(i+1))))
+        fingerTable.setNode(i+1, fingerTable.node(i).get());
+      else
+        fingerTable.setNode(i+1, successor().findSuccessor(this, createIdentifier(fingerTable.start(i+1))));
+    }
   }
 
   /**
@@ -234,7 +241,8 @@ public  Identifier createIdentifier(int index)
     if (this.status() == NodeStatus.OFFLINE || this.status() == NodeStatus.JOINING) return;
 
     /* TODO: DONE Implementation required */
-    int i = new Random().nextInt()%finger().size()+1;
+    //int i = new Random().nextInt()%finger().size()+1;
+    int i = 1 + new Random().nextInt(finger().size());
     fingerTable.setNode(i, findSuccessor(this, createIdentifier(finger().start(i))));
     //throw new RuntimeException("This method has not been implemented!");
   }
@@ -249,16 +257,17 @@ public  Identifier createIdentifier(int index)
   public void stabilize() {
     if (this.status() == NodeStatus.OFFLINE || this.status() == NodeStatus.JOINING) return;
     /* TODO: DONE Implementation required.*/
-    if(successor() == null) {
+    /*if(successor() == null) {
       ChordNode newSuccessor = fingerTable.node(2).get();
       fingerTable.setNode(1, newSuccessor);
       notify(fingerTable.node(1).get());
-    }
+    }*/
     ChordNode x=successor().predecessor();
-    if(IdentifierCircularInterval.createOpen(id(), successor().id()).contains(x.id()))
+    if(x != null && IdentifierCircularInterval.createOpen(id(), successor().id()).contains(x.id()))
     {
       fingerTable.setNode(1, x);
     }
+
     successor().notify(this);
     //throw new RuntimeException("This method has not been implemented!");
   }
@@ -273,9 +282,9 @@ public  Identifier createIdentifier(int index)
     if (this.status() == NodeStatus.OFFLINE || this.status() == NodeStatus.JOINING) return;
 
     /* TODO: Implementation required. Hint: Null check on predecessor! */
-    if(this.predecessor().status() == NodeStatus.OFFLINE)
+    if(this.predecessor() != null && this.predecessor().status() == NodeStatus.OFFLINE)
       this.setPredecessor(null);
-    throw new RuntimeException("This method has not been implemented!");
+    //throw new RuntimeException("This method has not been implemented!");
   }
 
   /**
@@ -285,7 +294,7 @@ public  Identifier createIdentifier(int index)
    */
   @Override
   public void checkSuccessor() {
-    if (this.status() == NodeStatus.OFFLINE || this.status() == NodeStatus.JOINING) return;
+    if (this.successor() != null && this.status() == NodeStatus.OFFLINE || this.status() == NodeStatus.JOINING) return;
     /* TODO: Implementation required. Hint: Null check on predecessor! */
     if(this.successor().status() == NodeStatus.OFFLINE)
       this.fingerTable.setNode(1, null);
