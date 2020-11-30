@@ -106,9 +106,14 @@ public  Identifier createIdentifier(int index)
       initFingerTable(nprime);
       updateOthers();
       /* TODO: THIS IS WRONG I HAVE TO CHANGE!!!! Move keys. */
-      Set<String> succkeys = successor().finger().node(1).get().keys();
+      Set<String> succkeys = successor().keys();
       HashFunction hashFunction = new HashFunction(getNetwork().getNbits());
-      succkeys.forEach((k) -> { if(createIdentifier(hashFunction.hash(k)).compareTo(id())<0) this.store(this, k, nprime.lookup(nprime, k).get()); nprime.delete(nprime, k); });
+      for (String k :
+              succkeys) {
+        if(IdentifierCircularInterval.createLeftOpen(successor().id(), id()).contains(createIdentifier(hashFunction.hash(k))))
+          this.store(this, k, successor().forceDelete(findSuccessor(this,createIdentifier(0)), k).get());
+
+      }
     } else {
       for (int i = 1; i <= getNetwork().getNbits(); i++) {
         this.fingerTable.setNode(i, this);

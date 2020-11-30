@@ -98,6 +98,9 @@ public abstract class AbstractChordPeer implements ChordNode {
             return node.delete(this, key);
         }
     }
+    public Optional<String> forceDelete(Node origin, String key) {
+        return Optional.ofNullable(this.storage.remove(key));
+    }
 
     /**
      * Returns a set of keys held by this {@link AbstractChordPeer}.
