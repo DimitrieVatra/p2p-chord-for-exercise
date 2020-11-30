@@ -294,10 +294,14 @@ public  Identifier createIdentifier(int index)
    */
   @Override
   public void checkSuccessor() {
-    if (this.successor() != null && this.status() == NodeStatus.OFFLINE || this.status() == NodeStatus.JOINING) return;
+    if (this.status() == NodeStatus.OFFLINE || this.status() == NodeStatus.JOINING) return;
     /* TODO: Implementation required. Hint: Null check on predecessor! */
-    if(this.successor().status() == NodeStatus.OFFLINE)
-      this.fingerTable.setNode(1, null);
+
+    ChordNode newSuccessor = fingerTable.node(2).get();
+    if(this.successor() != null && this.successor().status() == NodeStatus.OFFLINE)
+      //this.fingerTable.setNode(1, null);
+      fingerTable.setNode(1, newSuccessor);
+      newSuccessor.notify(this);
     //throw new RuntimeException("This method has not been implemented!");
   }
 
