@@ -37,6 +37,7 @@ public interface Node {
      * @return Value of data item identified by the key.
      */
     Optional<String> delete(Node origin, String key);
+    Optional<String> forceDelete(Node origin, String key);
 
     /**
      * Returns a set of keys held by this {@link Node}.

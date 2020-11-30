@@ -2,6 +2,7 @@ package ch.unibas.dmi.dbis.fds.p2p.chord.impl;
 
 import static ch.unibas.dmi.dbis.fds.p2p.chord.Utils.NUMBER_OF_BYTES;
 
+import ch.unibas.dmi.dbis.fds.p2p.chord.api.ChordNode;
 import ch.unibas.dmi.dbis.fds.p2p.chord.api.data.Identifier;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,9 +28,14 @@ public class ChordPeerTest {
 
 
     n0.join(null);
+    n0.store(n0,"key", "value");
+    n0.store(n0,"key1", "value");
+    n0.store(n0,"key3", "value");
     n1.join(n0);
     n3.join(n0);
 
+
+    ChordNode n = n1.lookupNodeForItem("key3");
     Assertions.assertFalse(network.isDynamic());
   }
 
